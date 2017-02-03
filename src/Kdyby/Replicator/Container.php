@@ -95,7 +95,7 @@ class Container extends Nette\Forms\Container
 	 *
 	 * @param \Nette\ComponentModel\IContainer
 	 */
-	protected function attached($obj)
+	protected function attached(Nette\ComponentModel\IComponent $obj): void
 	{
 		parent::attached($obj);
 
@@ -141,7 +141,7 @@ class Container extends Nette\Forms\Container
 	 * @param string $name
 	 * @return \Nette\Forms\Container
 	 */
-	protected function createComponent($name)
+	protected function createComponent(string $name): \Nette\ComponentModel\IComponent
 	{
 		$container = $this->createContainer($name);
 		$container->currentGroup = $this->currentGroup;
@@ -227,10 +227,9 @@ class Container extends Nette\Forms\Container
 	/**
 	 * @param array|\Traversable $values
 	 * @param bool $erase
-	 * @param bool $onlyDisabled
 	 * @return \Nette\Forms\Container|Container
 	 */
-	public function setValues($values, $erase = FALSE, $onlyDisabled = FALSE)
+	public function setValues(iterable $values, bool $erase = FALSE)
 	{
 		if (!$this->form->isAnchored() || !$this->form->isSubmitted()) {
 			foreach ($values as $name => $value) {
@@ -240,7 +239,7 @@ class Container extends Nette\Forms\Container
 			}
 		}
 
-		return parent::setValues($values, $erase, $onlyDisabled);
+		return parent::setValues($values, $erase);
 	}
 
 
@@ -470,7 +469,7 @@ class Container extends Nette\Forms\Container
 	 * @param $name
 	 * @return \Nette\Forms\Container
 	 */
-	public function addContainer($name)
+	public function addContainer($name): Nette\Forms\Container
 	{
 		return $this[$name] = new Nette\Forms\Container();
 	}
