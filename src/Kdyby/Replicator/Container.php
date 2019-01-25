@@ -61,7 +61,6 @@ class Container extends Nette\Forms\Container
 	 */
 	public function __construct($factory, $createDefault = 0, $forceDefault = FALSE)
 	{
-		parent::__construct();
 		$this->monitor('Nette\Application\UI\Presenter');
 		$this->monitor('Nette\Forms\Form');
 
@@ -147,7 +146,8 @@ class Container extends Nette\Forms\Container
 		$container->currentGroup = $this->currentGroup;
 		$this->addComponent($container, $name, $this->getFirstControlName());
 
-		Callback::invoke($this->factoryCallback, $container);
+		$callback = $this->factoryCallback;
+		$callback($container);
 
 		return $this->created[$container->name] = $container;
 	}
@@ -225,11 +225,11 @@ class Container extends Nette\Forms\Container
 
 
 	/**
-	 * @param array|\Traversable $values
+	 * @param array|object $values
 	 * @param bool $erase
 	 * @return \Nette\Forms\Container|Container
 	 */
-	public function setValues(iterable $values, bool $erase = FALSE)
+	public function setValues($values, bool $erase = FALSE)
 	{
 		if (!$this->form->isAnchored() || !$this->form->isSubmitted()) {
 			foreach ($values as $name => $value) {
@@ -505,12 +505,12 @@ class Container extends Nette\Forms\Container
 	public static function register($methodName = 'addDynamic')
 	{
 		if (self::$registered) {
-			Nette\Utils\ObjectMixin::setExtensionMethod(Nette\Forms\Container::class, self::$registered, function () {
+			Nette\Forms\Container::extensionMethod(self::$registered, function () {
 				throw new Nette\MemberAccessException;
 			});
 		}
 
-		Nette\Utils\ObjectMixin::setExtensionMethod(Nette\Forms\Container::class, $methodName, function (Nette\Forms\Container $_this, $name, $factory, $createDefault = 0, $forceDefault = FALSE) {
+		Nette\Forms\Container::extensionMethod($methodName, function (Nette\Forms\Container $_this, $name, $factory, $createDefault = 0, $forceDefault = FALSE) {
 			$control = new Container($factory, $createDefault, $forceDefault);
 			$control->currentGroup = $_this->currentGroup;
 			return $_this[$name] = $control;
@@ -520,7 +520,7 @@ class Container extends Nette\Forms\Container
 			return;
 		}
 
-		Nette\Utils\ObjectMixin::setExtensionMethod(SubmitButton::class, 'addRemoveOnClick', function (SubmitButton $_this, $callback = NULL) {
+		SubmitButton::extensionMethod('addRemoveOnClick', function (SubmitButton $_this, $callback = NULL) {
 			$_this->setValidationScope(FALSE);
 			$_this->onClick[] = function (SubmitButton $button) use ($callback) {
 				$replicator = $button->lookup(__NAMESPACE__ . '\Container');
@@ -536,7 +536,7 @@ class Container extends Nette\Forms\Container
 			return $_this;
 		});
 
-		Nette\Utils\ObjectMixin::setExtensionMethod(SubmitButton::class, 'addCreateOnClick', function (SubmitButton $_this, $allowEmpty = FALSE, $callback = NULL) {
+		SubmitButton::extensionMethod('addCreateOnClick', function (SubmitButton $_this, $allowEmpty = FALSE, $callback = NULL) {
 			$_this->onClick[] = function (SubmitButton $button) use ($allowEmpty, $callback) {
 				$replicator = $button->lookup(__NAMESPACE__ . '\Container');
 				/** @var Container $replicator */
