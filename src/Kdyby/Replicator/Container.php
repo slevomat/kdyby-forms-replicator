@@ -10,9 +10,9 @@
 
 namespace Kdyby\Replicator;
 
+use Closure;
 use Nette;
 use Nette\Forms\Controls\SubmitButton;
-use Nette\Utils\Callback;
 
 
 
@@ -65,7 +65,7 @@ class Container extends Nette\Forms\Container
 		$this->monitor('Nette\Forms\Form');
 
 		try {
-			$this->factoryCallback = Callback::closure($factory);
+			$this->factoryCallback = Closure::fromCallable($factory);
 		} catch (Nette\InvalidArgumentException $e) {
 			$type = is_object($factory) ? 'instanceof ' . get_class($factory) : gettype($factory);
 			throw new Nette\InvalidArgumentException(
@@ -84,7 +84,7 @@ class Container extends Nette\Forms\Container
 	 */
 	public function setFactory($factory)
 	{
-		$this->factoryCallback = Callback::closure($factory);
+		$this->factoryCallback = Closure::fromCallable($factory);
 	}
 
 
@@ -526,7 +526,7 @@ class Container extends Nette\Forms\Container
 				$replicator = $button->lookup(__NAMESPACE__ . '\Container');
 				/** @var Container $replicator */
 				if (is_callable($callback)) {
-					Callback::invoke($callback, $replicator, $button->parent);
+					$callback($replicator, $button->parent);
 				}
 				if ($form = $button->getForm(FALSE)) {
 					$form->onSuccess = [];
@@ -541,13 +541,13 @@ class Container extends Nette\Forms\Container
 				$replicator = $button->lookup(__NAMESPACE__ . '\Container');
 				/** @var Container $replicator */
 				if (!is_bool($allowEmpty)) {
-					$callback = Callback::closure($allowEmpty);
+					$callback = Closure::fromCallable($allowEmpty);
 					$allowEmpty = FALSE;
 				}
 				if ($allowEmpty === TRUE || $replicator->isAllFilled() === TRUE) {
 					$newContainer = $replicator->createOne();
 					if (is_callable($callback)) {
-						Callback::invoke($callback, $replicator, $newContainer);
+						$callback($replicator, $newContainer);
 					}
 				}
 				$button->getForm()->onSuccess = [];
